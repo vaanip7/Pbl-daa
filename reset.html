@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>UniShare - Reset Password</title>
+  <link rel="stylesheet" href="styles.css"> <!-- optional external CSS -->
+  <style>
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: #f5f5f5;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+    .reset-card {
+      background: #fff;
+      padding: 2rem;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+      width: 100%;
+      max-width: 380px;
+    }
+    h3 { font-family: 'DM Serif Display', serif; margin-bottom: 0.5rem; }
+    .field { margin-bottom: 1rem; }
+    .field label { font-size: 13px; font-weight: 500; color: #555; display: block; margin-bottom: 6px; }
+    .field input {
+      width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 6px;
+    }
+    .error-msg { font-size: 12px; color: #E24B4A; display: none; margin-top: 4px; }
+    .btn {
+      width: 100%; padding: 12px; background: #0f1c2e; color: #fff;
+      border: none; border-radius: 6px; cursor: pointer; font-weight: 500;
+    }
+    .btn:hover { opacity: 0.9; }
+    .success-msg { color: green; font-size: 14px; margin-top: 10px; display: none; }
+    .back-link { text-align: center; margin-top: 1rem; font-size: 13px; }
+    .back-link a { color: #378ADD; text-decoration: none; }
+    .back-link a:hover { text-decoration: underline; }
+  </style>
+</head>
+<body>
+  <div class="reset-card">
+    <h3>Set New Password</h3>
+    <p>Enter your new password below.</p>
+
+    <form id="resetForm">
+      <div class="field">
+        <label for="password">New Password</label>
+        <input type="password" id="password" placeholder="Enter new password" required>
+        <div class="error-msg" id="pass-err">Password must be at least 6 characters.</div>
+      </div>
+
+      <div class="field">
+        <label for="confirm_password">Confirm New Password</label>
+        <input type="password" id="confirm_password" placeholder="Confirm new password" required>
+        <div class="error-msg" id="confirm-err">Passwords do not match.</div>
+      </div>
+
+      <button type="submit" class="btn">Reset Password</button>
+      <div class="success-msg" id="success-msg">✅ Password reset successful! Redirecting...</div>
+    </form>
+
+    <div class="back-link">
+      <p>Back to <a href="login.html">Login</a></p>
+    </div>
+  </div>
+
+<script>
+  document.getElementById("resetForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+
+    const pass = document.getElementById("password").value.trim();
+    const confirm = document.getElementById("confirm_password").value.trim();
+    const passErr = document.getElementById("pass-err");
+    const confirmErr = document.getElementById("confirm-err");
+    const successMsg = document.getElementById("success-msg");
+
+    let valid = true;
+
+    if (pass.length < 6) {
+      passErr.style.display = "block";
+      valid = false;
+    } else {
+      passErr.style.display = "none";
+    }
+
+    if (pass !== confirm) {
+      confirmErr.style.display = "block";
+      valid = false;
+    } else {
+      confirmErr.style.display = "none";
+    }
+
+    if (valid) {
+      successMsg.style.display = "block";
+      // Simulate saving password (frontend only)
+      setTimeout(() => {
+        window.location.href = "login.html";
+      }, 2000);
+    }
+  });
+</script>
+</body>
+</html>
