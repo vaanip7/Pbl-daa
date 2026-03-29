@@ -1,12 +1,4 @@
-package com.unishare.dsa;
 
-import com.unishare.model.Assignment;
-import com.unishare.model.Material;
-import org.springframework.stereotype.Component;
-
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
 
 @Component
 public class SearchingService {
