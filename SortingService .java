@@ -1,12 +1,3 @@
-package com.unishare.dsa;
-
-import com.unishare.model.Assignment;
-import com.unishare.model.Submission;
-import org.springframework.stereotype.Component;
-
-import java.util.ArrayList;
-import java.util.List;
-
 @Component
 public class SortingService {
 
