@@ -1,76 +1,76 @@
+import java.util.*;
 
-@Component
-public class GraphService {
+public class PlagiarismGraphModule {
 
-    // ── GRAPH + BFS — Find plagiarism groups ──
-    //
-    // How the graph works:
-    // Each student = a NODE
-    // If two students submitted same/similar file = EDGE between them
-    //
-    // BFS (Breadth First Search):
-    // Start from one flagged student
-    // Visit all connected students level by level
-    // This finds the entire cheating group
-    public Map<String, Object> detectPlagiarismGroups(List<Submission> allSubmissions) {
+    // MAIN FUNCTION
+    public Map<String, Object> analyze(List<SubmissionNode> submissions) {
 
-        // Step 1 — Build adjacency list (the graph)
-        Map<String, List<String>> graph      = new HashMap<>();
-        List<Map<String, Object>> flaggedList = new ArrayList<>();
+        Map<String, List<String>> graph = buildGraph(submissions);
 
-        for (int i = 0; i < allSubmissions.size(); i++) {
-            for (int j = i + 1; j < allSubmissions.size(); j++) {
-                Submission a = allSubmissions.get(i);
-                Submission b = allSubmissions.get(j);
+        List<List<String>> bfsGroups = findGroupsBFS(graph);
+        List<List<String>> dfsGroups = findGroupsDFS(graph);
 
-                // Only compare same assignment
-                if (!a.getAssignmentTitle().equals(b.getAssignmentTitle())) continue;
+        Map<String, Object> result = new HashMap<>();
+        result.put("graph", graph);
+        result.put("bfsGroups", bfsGroups);
+        result.put("dfsGroups", dfsGroups);
 
-                // Calculate similarity
-                int similarity = calculateSimilarity(a.getFileName(), b.getFileName());
+        return result;
+    }
+
+    // ─────────────────────────────────────────────
+    // 🔷 STEP 1: BUILD GRAPH
+    private Map<String, List<String>> buildGraph(List<SubmissionNode> list) {
+
+        Map<String, List<String>> graph = new HashMap<>();
+
+        for (int i = 0; i < list.size(); i++) {
+            for (int j = i + 1; j < list.size(); j++) {
+
+                SubmissionNode a = list.get(i);
+                SubmissionNode b = list.get(j);
+
+                if (!a.getAssignment().equals(b.getAssignment())) continue;
+
+                int similarity = similarity(a.getContent(), b.getContent());
 
                 if (similarity >= 60) {
-                    // Add edge: a ↔ b
-                    graph.computeIfAbsent(a.getStudentName(), k -> new ArrayList<>())
-                         .add(b.getStudentName());
-                    graph.computeIfAbsent(b.getStudentName(), k -> new ArrayList<>())
-                         .add(a.getStudentName());
-
-                    // Record the flag
-                    Map<String, Object> flag = new HashMap<>();
-                    flag.put("student1",    a.getStudentName());
-                    flag.put("student2",    b.getStudentName());
-                    flag.put("assignment",  a.getAssignmentTitle());
-                    flag.put("similarity",  similarity);
-                    flaggedList.add(flag);
+                    graph.computeIfAbsent(a.getStudent(), k -> new ArrayList<>()).add(b.getStudent());
+                    graph.computeIfAbsent(b.getStudent(), k -> new ArrayList<>()).add(a.getStudent());
                 }
             }
         }
 
-        // Step 2 — BFS to find all connected groups
-        List<List<String>> groups  = new ArrayList<>();
-        Set<String>        visited = new HashSet<>();
+        return graph;
+    }
 
-        for (String student : graph.keySet()) {
-            if (!visited.contains(student)) {
-                List<String>   group = new ArrayList<>();
-                Queue<String>  queue = new LinkedList<>();
+    // ─────────────────────────────────────────────
+    // 🔷 STEP 2: BFS (Connected Components)
+    private List<List<String>> findGroupsBFS(Map<String, List<String>> graph) {
 
-                queue.add(student);
+        List<List<String>> groups = new ArrayList<>();
+        Set<String> visited = new HashSet<>();
 
-                // BFS loop
+        for (String node : graph.keySet()) {
+
+            if (!visited.contains(node)) {
+
+                List<String> group = new ArrayList<>();
+                Queue<String> queue = new LinkedList<>();
+
+                queue.add(node);
+
                 while (!queue.isEmpty()) {
-                    String current = queue.poll();
-                    if (visited.contains(current)) continue;
+                    String curr = queue.poll();
 
-                    visited.add(current);
-                    group.add(current);
+                    if (visited.contains(curr)) continue;
 
-                    // Add all neighbours to queue
-                    for (String neighbour :
-                            graph.getOrDefault(current, new ArrayList<>())) {
-                        if (!visited.contains(neighbour)) {
-                            queue.add(neighbour);
+                    visited.add(curr);
+                    group.add(curr);
+
+                    for (String neigh : graph.getOrDefault(curr, new ArrayList<>())) {
+                        if (!visited.contains(neigh)) {
+                            queue.add(neigh);
                         }
                     }
                 }
@@ -79,81 +79,61 @@ public class GraphService {
             }
         }
 
-        // Step 3 — DFS to find indirect connections
-        List<List<String>> dfsGroups = new ArrayList<>();
-        Set<String> dfsVisited = new HashSet<>();
-
-        for (String student : graph.keySet()) {
-            if (!dfsVisited.contains(student)) {
-                List<String> dfsGroup = new ArrayList<>();
-                dfsHelper(student, graph, dfsVisited, dfsGroup);
-                if (dfsGroup.size() > 1) dfsGroups.add(dfsGroup);
-            }
-        }
-
-        // Build final result
-        Map<String, Object> result = new HashMap<>();
-        result.put("flagged",   flaggedList);
-        result.put("groups",    groups);
-        result.put("dfsGroups", dfsGroups);
-        result.put("graphEdges", buildEdgeList(graph));
-        return result;
+        return groups;
     }
 
-    // ── DFS Helper — recursive ──
-    private void dfsHelper(String student,
-                            Map<String, List<String>> graph,
-                            Set<String> visited,
-                            List<String> group) {
-        visited.add(student);
-        group.add(student);
+    // ─────────────────────────────────────────────
+    // 🔷 STEP 3: DFS (Recursive)
+    private List<List<String>> findGroupsDFS(Map<String, List<String>> graph) {
 
-        for (String neighbour : graph.getOrDefault(student, new ArrayList<>())) {
-            if (!visited.contains(neighbour)) {
-                dfsHelper(neighbour, graph, visited, group);
+        List<List<String>> groups = new ArrayList<>();
+        Set<String> visited = new HashSet<>();
+
+        for (String node : graph.keySet()) {
+
+            if (!visited.contains(node)) {
+
+                List<String> group = new ArrayList<>();
+                dfs(node, graph, visited, group);
+
+                if (group.size() > 1) groups.add(group);
+            }
+        }
+
+        return groups;
+    }
+
+    private void dfs(String node,
+                     Map<String, List<String>> graph,
+                     Set<String> visited,
+                     List<String> group) {
+
+        visited.add(node);
+        group.add(node);
+
+        for (String neigh : graph.getOrDefault(node, new ArrayList<>())) {
+            if (!visited.contains(neigh)) {
+                dfs(neigh, graph, visited, group);
             }
         }
     }
 
-    // ── Build edge list for frontend visualization ──
-    private List<Map<String, String>> buildEdgeList(Map<String, List<String>> graph) {
-        List<Map<String, String>> edges   = new ArrayList<>();
-        Set<String>               seen    = new HashSet<>();
+    // ─────────────────────────────────────────────
+    // 🔷 STEP 4: SIMILARITY FUNCTION
+    private int similarity(String a, String b) {
 
-        for (Map.Entry<String, List<String>> entry : graph.entrySet()) {
-            for (String neighbour : entry.getValue()) {
-                String edgeKey = entry.getKey() + "_" + neighbour;
-                String reverseKey = neighbour + "_" + entry.getKey();
+        if (a.equalsIgnoreCase(b)) return 95;
 
-                if (!seen.contains(edgeKey) && !seen.contains(reverseKey)) {
-                    Map<String, String> edge = new HashMap<>();
-                    edge.put("from", entry.getKey());
-                    edge.put("to",   neighbour);
-                    edges.add(edge);
-                    seen.add(edgeKey);
-                }
-            }
-        }
-        return edges;
-    }
+        int match = 0;
+        int min = Math.min(a.length(), b.length());
 
-    // ── Similarity calculation ──
-    // Compares two file names — replace with real text comparison later
-    private int calculateSimilarity(String file1, String file2) {
-        if (file1 == null || file2 == null) return 0;
-        if (file1.equalsIgnoreCase(file2))  return 95;  // exact same file name
-
-        // Count matching characters
-        int matches = 0;
-        int minLen  = Math.min(file1.length(), file2.length());
-
-        for (int i = 0; i < minLen; i++) {
-            if (Character.toLowerCase(file1.charAt(i)) ==
-                Character.toLowerCase(file2.charAt(i))) {
-                matches++;
+        for (int i = 0; i < min; i++) {
+            if (Character.toLowerCase(a.charAt(i)) ==
+                Character.toLowerCase(b.charAt(i))) {
+                match++;
             }
         }
 
-        return (int)((double) matches / Math.max(file1.length(), file2.length()) * 100);
+        return (int)((double) match / Math.max(a.length(), b.length()) * 100);
     }
 }
