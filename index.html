@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>UniShare — Student Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="app">
+
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">
+        <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
+          <path d="M3 14L9 4L15 14" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M5.5 10H12.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <span class="brand-name">UniShare</span>
+    </div>
+
+    <div class="nav-label">Main</div>
+    <button class="nav-item active" data-section="dashboard">
+      <svg viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.3"/><rect x="9" y="1" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.3"/><rect x="1" y="9" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.3"/><rect x="9" y="9" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.3"/></svg>
+      Dashboard
+    </button>
+    <button class="nav-item" data-section="assignments">
+      <svg viewBox="0 0 16 16" fill="none"><path d="M3 2h10a1 1 0 011 1v10a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z" stroke="currentColor" stroke-width="1.3"/><path d="M5 6h6M5 9h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+      Assignments
+    </button>
+    <button class="nav-item" data-section="notes">
+      <svg viewBox="0 0 16 16" fill="none"><path d="M2 3h12v10H2z" stroke="currentColor" stroke-width="1.3" stroke-linejoin="round"/><path d="M5 6h6M5 9h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+      Study Notes
+    </button>
+    <button class="nav-item" data-section="submit">
+      <svg viewBox="0 0 16 16" fill="none"><path d="M8 2v8M5 7l3 3 3-3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 12h12" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+      Submit Work
+    </button>
+
+    <div class="nav-label">Academic</div>
+    <button class="nav-item" data-section="schedule">
+      <svg viewBox="0 0 16 16" fill="none"><rect x="1" y="3" width="14" height="12" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M5 1v4M11 1v4M1 7h14" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+      Schedule
+    </button>
+    <button class="nav-item" data-section="attendance">
+      <svg viewBox="0 0 16 16" fill="none"><rect x="1" y="3" width="14" height="12" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M5 1v4M11 1v4M1 7h14" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M5 10l1.5 1.5L9 8.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Attendance
+    </button>
+    <button class="nav-item" data-section="scores">
+      <svg viewBox="0 0 16 16" fill="none"><path d="M2 14V8M6 14V5M10 14V9M14 14V3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+      My Scores
+    </button>
+
+    <div class="sidebar-bottom">
+      <div class="user-card" onclick="openSettings()">
+        <div class="avatar" id="avatar-display">RS</div>
+        <div class="user-info">
+          <p id="user-display-name">Rahul Singh</p>
+          <span id="user-display-program">B.Tech — CSE</span>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <h1 id="page-title"></h1>
+        <p id="page-sub"></p>
+      </div>
+      <button class="logout-btn" onclick="logout()">Log out</button>
+    </div>
+    <div id="dynamic-content"></div>
+  </main>
+</div>
+
+<!-- SETTINGS MODAL -->
+<div class="modal-overlay" id="settings-modal">
+  <div class="modal">
+    <h2>Settings</h2>
+    <div class="form-group">
+      <label class="form-label">Full Name</label>
+      <input type="text" class="form-input" id="input-name" placeholder="Your name">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Program</label>
+      <input type="text" class="form-input" id="input-program" placeholder="e.g., B.Tech CSE">
+    </div>
+    <div class="form-group">
+      <label class="form-label">Accent Color</label>
+      <div class="color-options" id="color-options">
+        <div class="color-opt active" data-color="#5DCAA5" style="background:#5DCAA5"></div>
+        <div class="color-opt" data-color="#378ADD" style="background:#378ADD"></div>
+        <div class="color-opt" data-color="#D4537E" style="background:#D4537E"></div>
+        <div class="color-opt" data-color="#EF9F27" style="background:#EF9F27"></div>
+      </div>
+    </div>
+    <button class="btn-save" onclick="saveSettings()">Save Changes</button>
+    <button class="btn-cancel" onclick="closeSettings()">Cancel</button>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
