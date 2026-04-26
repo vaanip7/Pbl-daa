@@ -1,0 +1,1052 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>UniShare — Faculty Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html, body {
+      height: 100%;
+      font-family: 'DM Sans', sans-serif;
+      background: #f0f0ee;
+      color: #1a1a1a;
+    }
+
+    .app { display: flex; min-height: 100vh; }
+
+    /* ── SIDEBAR ── */
+    .sidebar {
+      width: 240px;
+      background: #0f1c2e;
+      display: flex;
+      flex-direction: column;
+      padding: 1.5rem 1rem;
+      position: fixed;
+      top: 0; left: 0; bottom: 0;
+      z-index: 100;
+    }
+
+    .brand {
+      display: flex; align-items: center; gap: 10px;
+      padding: 0.5rem 0.75rem;
+      margin-bottom: 2rem;
+    }
+
+    .brand-mark {
+      width: 32px; height: 32px;
+      background: rgba(255,255,255,0.1);
+      border: 1px solid rgba(255,255,255,0.15);
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .brand-name {
+      font-family: 'DM Serif Display', serif;
+      font-size: 20px; color: #fff;
+    }
+
+    .nav-section-label {
+      font-size: 10px; font-weight: 500;
+      letter-spacing: 0.09em; text-transform: uppercase;
+      color: rgba(255,255,255,0.28);
+      padding: 0 0.75rem;
+      margin-bottom: 6px; margin-top: 1.25rem;
+    }
+
+    .nav-item {
+      display: flex; align-items: center; gap: 11px;
+      padding: 9px 12px;
+      border-radius: 8px; cursor: pointer;
+      color: rgba(255,255,255,0.45);
+      font-size: 13px; font-weight: 400;
+      transition: all 0.15s;
+      text-decoration: none; margin-bottom: 1px;
+      border: none; background: none;
+      font-family: 'DM Sans', sans-serif;
+      width: 100%; text-align: left;
+    }
+
+    .nav-item:hover {
+      background: rgba(255,255,255,0.07);
+      color: rgba(255,255,255,0.85);
+    }
+
+    .nav-item.active {
+      background: rgba(255,255,255,0.1);
+      color: #fff;
+    }
+
+    .nav-item svg { width: 16px; height: 16px; flex-shrink: 0; }
+
+    .nav-badge {
+      margin-left: auto;
+      background: #ef4444;
+      color: #fff;
+      font-size: 10px; font-weight: 500;
+      padding: 1px 6px; border-radius: 20px;
+    }
+
+    .sidebar-bottom {
+      margin-top: auto;
+      padding: 1rem 0.5rem 0;
+      border-top: 1px solid rgba(255,255,255,0.07);
+    }
+
+    .user-card {
+      display: flex; align-items: center; gap: 10px;
+      padding: 8px 8px;
+    }
+
+    .user-avatar {
+      width: 34px; height: 34px; border-radius: 50%;
+      background: rgba(192,132,252,0.2);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 12px; font-weight: 500; color: #c084fc;
+      flex-shrink: 0;
+    }
+
+    .user-info p    { font-size: 13px; color: #fff; font-weight: 500; }
+    .user-info span { font-size: 11px; color: rgba(255,255,255,0.38); }
+
+    /* ── MAIN ── */
+    .main {
+      margin-left: 240px;
+      flex: 1;
+      padding: 2.5rem 2.5rem;
+      min-height: 100vh;
+    }
+
+    /* ── PAGE HEADER ── */
+    .page-header {
+      display: flex; align-items: flex-start; justify-content: space-between;
+      margin-bottom: 2rem;
+    }
+
+    .page-header h1 {
+      font-family: 'DM Serif Display', serif;
+      font-size: 28px; font-weight: 400;
+      color: #1a1a1a; letter-spacing: -0.3px;
+      margin-bottom: 4px;
+    }
+
+    .page-header p { font-size: 13px; color: #6b6b68; }
+
+    .logout-btn {
+      font-size: 12px; color: #6b6b68;
+      background: #fff;
+      border: 0.5px solid rgba(0,0,0,0.12);
+      border-radius: 7px; padding: 8px 16px;
+      cursor: pointer; font-family: 'DM Sans', sans-serif;
+      transition: background 0.15s;
+    }
+
+    .logout-btn:hover { background: #f0f0ee; }
+
+    /* ── SECTIONS ── */
+    .section { display: none; }
+    .section.active { display: block; }
+
+    /* ── STATS GRID ── */
+    .stats-grid {
+      display: grid; grid-template-columns: repeat(4,1fr);
+      gap: 12px; margin-bottom: 1.75rem;
+    }
+
+    .stat-card {
+      background: #fff;
+      border: 0.5px solid rgba(0,0,0,0.07);
+      border-radius: 12px; padding: 1.1rem 1.25rem;
+    }
+
+    .stat-card.dark { background: #0f1c2e; }
+
+    .stat-label { font-size: 12px; color: #6b6b68; margin-bottom: 6px; }
+    .stat-value { font-size: 26px; font-weight: 500; color: #1a1a1a; line-height: 1; }
+    .stat-sub   { font-size: 11px; color: #6b6b68; margin-top: 4px; }
+
+    .stat-card.dark .stat-label { color: rgba(255,255,255,0.4); }
+    .stat-card.dark .stat-value { color: #c084fc; }
+    .stat-card.dark .stat-sub   { color: rgba(255,255,255,0.28); }
+
+    /* ── TWO COL ── */
+    .two-col {
+      display: grid; grid-template-columns: 1fr 1fr;
+      gap: 1.25rem; margin-bottom: 1.25rem;
+    }
+
+    /* ── WHITE CARD ── */
+    .card {
+      background: #fff;
+      border: 0.5px solid rgba(0,0,0,0.07);
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .card-header {
+      display: flex; align-items: center; justify-content: space-between;
+      margin-bottom: 1.1rem;
+      padding-bottom: 10px;
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+    }
+
+    .card-title { font-size: 14px; font-weight: 500; color: #1a1a1a; }
+
+    .card-action {
+      font-size: 12px; color: #6b6b68;
+      background: #f0f0ee; padding: 4px 10px;
+      border-radius: 6px; cursor: pointer;
+      text-decoration: none; border: none;
+      font-family: 'DM Sans', sans-serif;
+      transition: background 0.15s;
+    }
+
+    .card-action:hover { background: #e4e4e2; }
+
+    /* ── BADGES ── */
+    .badge {
+      font-size: 10px; font-weight: 500;
+      padding: 3px 9px; border-radius: 20px; white-space: nowrap;
+    }
+
+    .badge.pending  { background: #fef3c7; color: #92400e; }
+    .badge.done     { background: #d1fae5; color: #065f46; }
+    .badge.flagged  { background: #fee2e2; color: #991b1b; }
+    .badge.new      { background: #dbeafe; color: #1e40af; }
+
+    /* ── SUBMISSION ROWS ── */
+    .sub-row {
+      display: flex; align-items: center; gap: 12px;
+      padding: 10px 0;
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+    }
+
+    .sub-row:last-child { border-bottom: none; padding-bottom: 0; }
+
+    .sub-icon {
+      width: 32px; height: 32px; border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .sub-icon.pending { background: #fef3c7; }
+    .sub-icon.done    { background: #d1fae5; }
+    .sub-icon.flagged { background: #fee2e2; }
+
+    .sub-info { flex: 1; }
+    .sub-info p    { font-size: 13px; font-weight: 500; color: #1a1a1a; }
+    .sub-info span { font-size: 11px; color: #6b6b68; }
+
+    .action-btn {
+      font-size: 11px; font-weight: 500;
+      font-family: 'DM Sans', sans-serif;
+      border: none; border-radius: 6px; padding: 5px 11px; cursor: pointer;
+      transition: background 0.15s;
+    }
+
+    .action-btn.review { background: #f3e8ff; color: #7c3aed; }
+    .action-btn.review:hover { background: #e9d5ff; }
+    .action-btn.grade  { background: #d1fae5; color: #065f46; }
+    .action-btn.grade:hover  { background: #a7f3d0; }
+
+    /* ── PLAGIARISM ALERTS ── */
+    .alert-item {
+      display: flex; align-items: flex-start; gap: 12px;
+      padding: 12px;
+      background: #fff8f8;
+      border: 1px solid rgba(239,68,68,0.12);
+      border-radius: 10px; margin-bottom: 8px;
+    }
+
+    .alert-item:last-child { margin-bottom: 0; }
+
+    .alert-icon {
+      width: 30px; height: 30px; background: #fee2e2;
+      border-radius: 8px;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+
+    .alert-info { flex: 1; }
+    .alert-info p    { font-size: 13px; font-weight: 500; color: #1a1a1a; }
+    .alert-info span { font-size: 11px; color: #6b6b68; }
+
+    .sim-bar { display: flex; align-items: center; gap: 8px; margin-top: 6px; }
+
+    .sim-track {
+      flex: 1; height: 5px;
+      background: #f0f0ee; border-radius: 20px; overflow: hidden;
+    }
+
+    .sim-fill { height: 100%; border-radius: 20px; }
+    .sim-label { font-size: 11px; font-weight: 500; min-width: 30px; }
+
+    /* ── SCHEDULE ROW ── */
+    .today-row {
+      display: flex; align-items: center; gap: 14px;
+      padding: 10px 0; border-bottom: 1px solid rgba(0,0,0,0.05);
+    }
+
+    .today-row:last-child { border-bottom: none; }
+    .today-time  { font-size: 11px; color: #6b6b68; min-width: 90px; }
+    .today-dot   { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+    .today-info p    { font-size: 13px; font-weight: 500; color: #1a1a1a; }
+    .today-info span { font-size: 11px; color: #6b6b68; }
+    .today-room {
+      margin-left: auto; font-size: 11px; color: #6b6b68;
+      background: #f0f0ee; padding: 3px 9px; border-radius: 5px;
+    }
+
+    /* ── FORMS ── */
+    .form-label {
+      font-size: 11px; font-weight: 500; color: #6b6b68;
+      letter-spacing: 0.04em; text-transform: uppercase;
+      margin-bottom: 6px; display: block;
+    }
+
+    .form-input, .form-select, .form-date {
+      width: 100%; height: 40px;
+      border: 1px solid rgba(0,0,0,0.1);
+      border-radius: 8px; padding: 0 12px;
+      font-family: 'DM Sans', sans-serif; font-size: 13px;
+      color: #1a1a1a; background: #fff; outline: none;
+      margin-bottom: 14px; transition: border-color 0.15s;
+    }
+
+    .form-input:focus, .form-select:focus, .form-date:focus {
+      border-color: rgba(0,0,0,0.28);
+      box-shadow: 0 0 0 3px rgba(15,28,46,0.07);
+    }
+
+    .upload-box {
+      border: 1.5px dashed rgba(0,0,0,0.13);
+      border-radius: 10px; padding: 1.75rem;
+      text-align: center; cursor: pointer;
+      margin-bottom: 14px;
+      transition: border-color 0.15s, background 0.15s;
+    }
+
+    .upload-box:hover { border-color: #0f1c2e; background: #f7f7f5; }
+    .upload-box p    { font-size: 13px; color: #6b6b68; margin-top: 8px; }
+    .upload-box span { font-size: 11px; color: #9a9a96; }
+
+    .upload-icon-box {
+      width: 40px; height: 40px; background: #e8edf2;
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 6px;
+    }
+
+    .form-submit {
+      width: 100%; height: 42px;
+      background: #0f1c2e; color: #fff;
+      border: none; border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px; font-weight: 500;
+      cursor: pointer; transition: opacity 0.15s;
+    }
+
+    .form-submit:hover { opacity: 0.85; }
+
+    /* ── DATA TABLE ── */
+    .data-table {
+      width: 100%; border-collapse: collapse; font-size: 13px;
+    }
+
+    .data-table th {
+      background: #f7f7f5; padding: 9px 12px;
+      text-align: left; font-size: 11px; font-weight: 500;
+      color: #6b6b68; letter-spacing: 0.03em;
+      border-bottom: 1px solid rgba(0,0,0,0.07);
+    }
+
+    .data-table td {
+      padding: 10px 12px;
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+      color: #1a1a1a; vertical-align: middle;
+    }
+
+    .data-table tr:last-child td { border-bottom: none; }
+    .data-table tr:hover td { background: #fafaf9; }
+
+    .stu-avatar {
+      width: 26px; height: 26px; border-radius: 50%;
+      background: #dbeafe;
+      display: inline-flex; align-items: center; justify-content: center;
+      font-size: 10px; font-weight: 500; color: #1e40af;
+      margin-right: 7px; vertical-align: middle;
+    }
+
+    /* ── ATTENDANCE ── */
+    .att-summary {
+      display: grid; grid-template-columns: repeat(4,1fr);
+      gap: 10px; margin-bottom: 1.25rem;
+    }
+
+    .att-sum-card {
+      background: #fff; border: 0.5px solid rgba(0,0,0,0.07);
+      border-radius: 10px; padding: 0.9rem 1rem; text-align: center;
+    }
+
+    .att-sum-num   { font-size: 22px; font-weight: 500; color: #1a1a1a; line-height: 1; }
+    .att-sum-label { font-size: 11px; color: #6b6b68; margin-top: 3px; }
+
+    .att-controls {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 1.25rem; flex-wrap: wrap;
+    }
+
+    .att-controls .form-select { margin-bottom: 0; width: auto; min-width: 180px; }
+    .att-controls .form-date   { margin-bottom: 0; width: auto; }
+
+    .att-load-btn {
+      height: 40px; padding: 0 18px;
+      background: #0f1c2e; color: #fff;
+      border: none; border-radius: 8px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px; font-weight: 500;
+      cursor: pointer; white-space: nowrap;
+      transition: opacity 0.15s;
+    }
+
+    .att-load-btn:hover { opacity: 0.85; }
+
+    .att-toggle { display: flex; gap: 5px; }
+
+    .att-btn {
+      width: 32px; height: 28px;
+      border: 1px solid rgba(0,0,0,0.1);
+      border-radius: 6px; font-size: 11px; font-weight: 500;
+      cursor: pointer; font-family: 'DM Sans', sans-serif;
+      transition: all 0.12s; background: #fff; color: #6b6b68;
+    }
+
+    .att-btn.present { background: #d1fae5; color: #065f46; border-color: rgba(5,150,105,0.2); }
+    .att-btn.absent  { background: #fee2e2; color: #991b1b; border-color: rgba(239,68,68,0.2); }
+    .att-btn.late    { background: #fef3c7; color: #92400e; border-color: rgba(245,158,11,0.2); }
+
+    .att-pct {
+      font-size: 12px; font-weight: 500;
+      padding: 3px 8px; border-radius: 6px; min-width: 42px; text-align: center;
+    }
+
+    .att-pct.good { background: #d1fae5; color: #065f46; }
+    .att-pct.ok   { background: #fef3c7; color: #92400e; }
+    .att-pct.low  { background: #fee2e2; color: #991b1b; }
+
+    .save-att-btn {
+      height: 34px; padding: 0 16px;
+      background: #0f1c2e; color: #fff;
+      border: none; border-radius: 7px;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 12px; font-weight: 500;
+      cursor: pointer; transition: opacity 0.15s;
+    }
+
+    .save-att-btn:hover { opacity: 0.85; }
+
+    .chip {
+      font-size: 11px; font-weight: 500;
+      padding: 2px 8px; border-radius: 20px;
+    }
+
+    .chip.p { background: #d1fae5; color: #065f46; }
+    .chip.a { background: #fee2e2; color: #991b1b; }
+    .chip.l { background: #fef3c7; color: #92400e; }
+
+    /* ── SCORE BARS ── */
+    .score-row {
+      display: flex; align-items: center; gap: 14px;
+      padding: 12px 0;
+      border-bottom: 1px solid rgba(0,0,0,0.05);
+    }
+
+    .score-row:last-child { border-bottom: none; }
+    .score-subject { font-size: 13px; color: #1a1a1a; min-width: 160px; }
+
+    .score-bar-track {
+      flex: 1; height: 7px;
+      background: #f0f0ee; border-radius: 20px; overflow: hidden;
+    }
+
+    .score-bar-fill { height: 100%; border-radius: 20px; }
+
+    .score-pct {
+      font-size: 13px; font-weight: 500;
+      color: #1a1a1a; min-width: 36px; text-align: right;
+    }
+
+    @media (max-width: 900px) {
+      .sidebar { display: none; }
+      .main { margin-left: 0; }
+      .stats-grid { grid-template-columns: 1fr 1fr; }
+      .two-col { grid-template-columns: 1fr; }
+      .att-summary { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+
+  <!-- ── SIDEBAR ── -->
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">
+        <svg width="16" height="16" viewBox="0 0 18 18" fill="none">
+          <path d="M3 14L9 4L15 14" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          <path d="M5.5 10H12.5" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <span class="brand-name">UniShare</span>
+    </div>
+
+    <div class="nav-section-label">Main</div>
+
+    <button class="nav-item active" onclick="showSection('dashboard',this)">
+      <svg viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.3"/><rect x="9" y="1" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.3"/><rect x="1" y="9" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.3"/><rect x="9" y="9" width="6" height="6" rx="1.5" stroke="currentColor" stroke-width="1.3"/></svg>
+      Dashboard
+    </button>
+
+    <button class="nav-item" onclick="showSection('submissions',this)">
+      <svg viewBox="0 0 16 16" fill="none"><path d="M3 2h10a1 1 0 011 1v10a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z" stroke="currentColor" stroke-width="1.3"/><path d="M5 6h6M5 9h4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+      Submissions
+    </button>
+
+    <button class="nav-item" onclick="showSection('plagiarism',this)">
+      <svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.3"/><path d="M8 5v4M8 11v1" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+      Plagiarism Alerts
+      <span class="nav-badge">3</span>
+    </button>
+
+    <div class="nav-section-label">Manage</div>
+
+    <button class="nav-item" onclick="showSection('attendance',this)">
+      <svg viewBox="0 0 16 16" fill="none"><rect x="1" y="3" width="14" height="12" rx="1.5" stroke="currentColor" stroke-width="1.3"/><path d="M5 1v4M11 1v4M1 7h14" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M5 10l1.5 1.5L9 8.5" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Attendance
+    </button>
+
+    <button class="nav-item" onclick="showSection('upload-notes',this)">
+      <svg viewBox="0 0 16 16" fill="none"><path d="M8 10V2M5 5l3-3 3 3" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 12h12" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+      Upload Notes
+    </button>
+
+    <button class="nav-item" onclick="showSection('assign',this)">
+      <svg viewBox="0 0 16 16" fill="none"><path d="M3 2h10a1 1 0 011 1v10a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z" stroke="currentColor" stroke-width="1.3"/><path d="M6 8h4M8 6v4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+      Give Assignment
+    </button>
+
+    <button class="nav-item" onclick="showSection('students',this)">
+      <svg viewBox="0 0 16 16" fill="none"><circle cx="6" cy="5" r="2.5" stroke="currentColor" stroke-width="1.3"/><path d="M1 13c0-2.5 2-4 5-4s5 1.5 5 4" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/><path d="M12 7l2 2-2 2" stroke="currentColor" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Students
+    </button>
+
+    <div class="sidebar-bottom">
+      <div class="user-card">
+        <div class="user-avatar" id="nav-avatar">PS</div>
+        <div class="user-info">
+          <p id="nav-name">Prof. Sharma</p>
+          <span>Computer Science</span>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ── MAIN ── -->
+  <main class="main">
+
+    <!-- ══════════════════════════
+         DASHBOARD
+    ══════════════════════════ -->
+    <div class="section active" id="section-dashboard">
+      <div class="page-header">
+        <div>
+          <h1 id="page-title">Good morning, Prof. Sharma 👋</h1>
+          <p id="page-sub">Here's your department overview</p>
+        </div>
+        <button class="logout-btn" onclick="localStorage.clear(); window.location.href='login.html'">Log out</button>
+      </div>
+
+      <div class="stats-grid">
+        <div class="stat-card dark">
+          <div class="stat-label">Pending reviews</div>
+          <div class="stat-value">7</div>
+          <div class="stat-sub">Submissions waiting</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Total students</div>
+          <div class="stat-value">48</div>
+          <div class="stat-sub">Across 3 subjects</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Notes uploaded</div>
+          <div class="stat-value">14</div>
+          <div class="stat-sub">This semester</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-label">Plagiarism flags</div>
+          <div class="stat-value" style="color:#ef4444">3</div>
+          <div class="stat-sub">Need attention</div>
+        </div>
+      </div>
+
+      <div class="two-col">
+        <!-- Recent Submissions -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Recent Submissions</span>
+            <button class="card-action" onclick="showSection('submissions', document.querySelectorAll('.nav-item')[1])">View all</button>
+          </div>
+          <div class="sub-row">
+            <div class="sub-icon pending"><svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M3 2h10a1 1 0 011 1v10a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z" stroke="#92400e" stroke-width="1.3"/></svg></div>
+            <div class="sub-info"><p>Rahul Singh — Linked Lists</p><span>Data Structures · 2h ago</span></div>
+            <button class="action-btn review">Review</button>
+          </div>
+          <div class="sub-row">
+            <div class="sub-icon flagged"><svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M8 5v4M8 11v1" stroke="#991b1b" stroke-width="1.3" stroke-linecap="round"/></svg></div>
+            <div class="sub-info"><p>Priya Patel — Linked Lists</p><span>Data Structures · 87% similarity</span></div>
+            <span class="badge flagged">Flagged</span>
+          </div>
+          <div class="sub-row">
+            <div class="sub-icon done"><svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5L13 5" stroke="#065f46" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>
+            <div class="sub-info"><p>Amit Kumar — Sorting Algorithms</p><span>Data Structures · Reviewed</span></div>
+            <button class="action-btn grade">Grade</button>
+          </div>
+          <div class="sub-row">
+            <div class="sub-icon pending"><svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M3 2h10a1 1 0 011 1v10a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z" stroke="#92400e" stroke-width="1.3"/></svg></div>
+            <div class="sub-info"><p>Sneha Rao — Stacks &amp; Queues</p><span>Data Structures · 5h ago</span></div>
+            <button class="action-btn review">Review</button>
+          </div>
+        </div>
+
+        <!-- Plagiarism -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Plagiarism Alerts</span>
+            <button class="card-action" onclick="showSection('plagiarism', document.querySelectorAll('.nav-item')[2])">View all</button>
+          </div>
+          <div class="alert-item">
+            <div class="alert-icon"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 5v4M8 11v1" stroke="#991b1b" stroke-width="1.4" stroke-linecap="round"/><circle cx="8" cy="8" r="6" stroke="#991b1b" stroke-width="1.3"/></svg></div>
+            <div class="alert-info"><p>Priya Patel &amp; Rohan Gupta</p><span>Linked Lists — Data Structures</span>
+              <div class="sim-bar"><div class="sim-track"><div class="sim-fill" style="width:87%;background:#ef4444"></div></div><span class="sim-label" style="color:#ef4444">87%</span></div>
+            </div>
+          </div>
+          <div class="alert-item">
+            <div class="alert-icon"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 5v4M8 11v1" stroke="#991b1b" stroke-width="1.4" stroke-linecap="round"/><circle cx="8" cy="8" r="6" stroke="#991b1b" stroke-width="1.3"/></svg></div>
+            <div class="alert-info"><p>Karan Mehta &amp; Anjali Das</p><span>ER Diagram — DBMS</span>
+              <div class="sim-bar"><div class="sim-track"><div class="sim-fill" style="width:72%;background:#f59e0b"></div></div><span class="sim-label" style="color:#f59e0b">72%</span></div>
+            </div>
+          </div>
+          <div class="alert-item">
+            <div class="alert-icon"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 5v4M8 11v1" stroke="#991b1b" stroke-width="1.4" stroke-linecap="round"/><circle cx="8" cy="8" r="6" stroke="#991b1b" stroke-width="1.3"/></svg></div>
+            <div class="alert-info"><p>Neha Sharma &amp; Vikram Singh</p><span>Subnetting — Computer Networks</span>
+              <div class="sim-bar"><div class="sim-track"><div class="sim-fill" style="width:65%;background:#f59e0b"></div></div><span class="sim-label" style="color:#f59e0b">65%</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Today's classes -->
+      <div class="card">
+        <div class="card-header"><span class="card-title">Today's Classes</span></div>
+        <div class="today-row"><span class="today-time">9:00 – 10:00</span><div class="today-dot" style="background:#7c3aed"></div><div class="today-info"><p>Data Structures — Sec A</p><span>48 students</span></div><span class="today-room">Room 301</span></div>
+        <div class="today-row"><span class="today-time">11:00 – 12:00</span><div class="today-dot" style="background:#5DCAA5"></div><div class="today-info"><p>Algorithms — Sec B</p><span>42 students</span></div><span class="today-room">Room 204</span></div>
+        <div class="today-row"><span class="today-time">2:00 – 4:00</span><div class="today-dot" style="background:#f59e0b"></div><div class="today-info"><p>DS Lab</p><span>24 students</span></div><span class="today-room">Lab 1</span></div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════
+         SUBMISSIONS
+    ══════════════════════════ -->
+    <div class="section" id="section-submissions">
+      <div class="page-header">
+        <div><h1>Submissions</h1><p>Review and grade student assignments</p></div>
+        <button class="logout-btn" onclick="localStorage.clear(); window.location.href='login.html'">Log out</button>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">All Submissions</span></div>
+        <div class="sub-row"><div class="sub-icon pending"><svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M3 2h10a1 1 0 011 1v10a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z" stroke="#92400e" stroke-width="1.3"/></svg></div><div class="sub-info"><p>Rahul Singh — Linked Lists</p><span>Data Structures · 21 Mar 2026</span></div><button class="action-btn review">Review</button></div>
+        <div class="sub-row"><div class="sub-icon flagged"><svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M8 5v4M8 11v1" stroke="#991b1b" stroke-width="1.3" stroke-linecap="round"/></svg></div><div class="sub-info"><p>Priya Patel — Linked Lists</p><span>Data Structures · 87% similarity</span></div><span class="badge flagged">Flagged</span></div>
+        <div class="sub-row"><div class="sub-icon done"><svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5L13 5" stroke="#065f46" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="sub-info"><p>Amit Kumar — Sorting Algorithms</p><span>Data Structures · 20 Mar 2026</span></div><button class="action-btn grade">Grade</button></div>
+        <div class="sub-row"><div class="sub-icon pending"><svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M3 2h10a1 1 0 011 1v10a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z" stroke="#92400e" stroke-width="1.3"/></svg></div><div class="sub-info"><p>Sneha Rao — Stacks &amp; Queues</p><span>Data Structures · 21 Mar 2026</span></div><button class="action-btn review">Review</button></div>
+        <div class="sub-row"><div class="sub-icon done"><svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M3 8l3.5 3.5L13 5" stroke="#065f46" stroke-width="1.3" stroke-linecap="round" stroke-linejoin="round"/></svg></div><div class="sub-info"><p>Rohan Gupta — Linked Lists</p><span>Data Structures · 19 Mar 2026</span></div><button class="action-btn grade">Grade</button></div>
+        <div class="sub-row"><div class="sub-icon flagged"><svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M8 5v4M8 11v1" stroke="#991b1b" stroke-width="1.3" stroke-linecap="round"/></svg></div><div class="sub-info"><p>Karan Mehta — ER Diagram</p><span>DBMS · 72% similarity</span></div><span class="badge flagged">Flagged</span></div>
+        <div class="sub-row"><div class="sub-icon pending"><svg width="15" height="15" viewBox="0 0 16 16" fill="none"><path d="M3 2h10a1 1 0 011 1v10a1 1 0 01-1 1H3a1 1 0 01-1-1V3a1 1 0 011-1z" stroke="#92400e" stroke-width="1.3"/></svg></div><div class="sub-info"><p>Anjali Das — Process Scheduling</p><span>Operating Systems · 22 Mar 2026</span></div><button class="action-btn review">Review</button></div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════
+         PLAGIARISM
+    ══════════════════════════ -->
+    <div class="section" id="section-plagiarism">
+      <div class="page-header">
+        <div><h1>Plagiarism Alerts</h1><p>Submissions flagged for high similarity</p></div>
+        <button class="logout-btn" onclick="localStorage.clear(); window.location.href='login.html'">Log out</button>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">All Flagged Submissions</span></div>
+        <div class="alert-item">
+          <div class="alert-icon"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 5v4M8 11v1" stroke="#991b1b" stroke-width="1.4" stroke-linecap="round"/><circle cx="8" cy="8" r="6" stroke="#991b1b" stroke-width="1.3"/></svg></div>
+          <div class="alert-info"><p>Priya Patel &amp; Rohan Gupta</p><span>Linked Lists — Data Structures · 21 Mar 2026</span>
+            <div class="sim-bar"><div class="sim-track"><div class="sim-fill" style="width:87%;background:#ef4444"></div></div><span class="sim-label" style="color:#ef4444">87%</span></div>
+          </div>
+        </div>
+        <div class="alert-item" style="margin-top:8px">
+          <div class="alert-icon"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 5v4M8 11v1" stroke="#991b1b" stroke-width="1.4" stroke-linecap="round"/><circle cx="8" cy="8" r="6" stroke="#991b1b" stroke-width="1.3"/></svg></div>
+          <div class="alert-info"><p>Karan Mehta &amp; Anjali Das</p><span>ER Diagram — DBMS · 20 Mar 2026</span>
+            <div class="sim-bar"><div class="sim-track"><div class="sim-fill" style="width:72%;background:#f59e0b"></div></div><span class="sim-label" style="color:#f59e0b">72%</span></div>
+          </div>
+        </div>
+        <div class="alert-item" style="margin-top:8px">
+          <div class="alert-icon"><svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M8 5v4M8 11v1" stroke="#991b1b" stroke-width="1.4" stroke-linecap="round"/><circle cx="8" cy="8" r="6" stroke="#991b1b" stroke-width="1.3"/></svg></div>
+          <div class="alert-info"><p>Neha Sharma &amp; Vikram Singh</p><span>Subnetting — Computer Networks · 18 Mar 2026</span>
+            <div class="sim-bar"><div class="sim-track"><div class="sim-fill" style="width:65%;background:#f59e0b"></div></div><span class="sim-label" style="color:#f59e0b">65%</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════
+         ATTENDANCE
+    ══════════════════════════ -->
+    <div class="section" id="section-attendance">
+      <div class="page-header">
+        <div><h1>Attendance</h1><p>Mark and track student attendance</p></div>
+        <button class="logout-btn" onclick="localStorage.clear(); window.location.href='login.html'">Log out</button>
+      </div>
+
+      <div class="att-summary">
+        <div class="att-sum-card"><div class="att-sum-num">8</div><div class="att-sum-label">Total Students</div></div>
+        <div class="att-sum-card"><div class="att-sum-num" style="color:#065f46" id="att-p">0</div><div class="att-sum-label">Present</div></div>
+        <div class="att-sum-card"><div class="att-sum-num" style="color:#991b1b" id="att-a">0</div><div class="att-sum-label">Absent</div></div>
+        <div class="att-sum-card"><div class="att-sum-num" style="color:#92400e" id="att-l">0</div><div class="att-sum-label">Late</div></div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><span class="card-title">Mark Attendance</span></div>
+        <div class="att-controls">
+          <select class="form-select" id="att-subject" style="margin-bottom:0">
+            <option value="">Select subject...</option>
+            <option>Data Structures</option>
+            <option>Algorithms</option>
+            <option>DBMS</option>
+            <option>Operating Systems</option>
+            <option>Computer Networks</option>
+          </select>
+          <input class="form-date" type="date" id="att-date" style="margin-bottom:0" />
+          <button class="att-load-btn" onclick="loadAttendance()">Load Students</button>
+        </div>
+
+        <div id="att-wrap" style="display:none">
+          <table class="data-table">
+            <thead><tr><th>#</th><th>Student</th><th>Roll No.</th><th>Mark Attendance</th><th>Status</th></tr></thead>
+            <tbody id="att-tbody"></tbody>
+          </table>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-top:1.25rem;padding-top:1rem;border-top:1px solid rgba(0,0,0,0.06)">
+            <span style="font-size:13px;color:#6b6b68" id="att-label">Session: —</span>
+            <button class="save-att-btn" onclick="saveAttendance()">💾 Save Attendance</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><span class="card-title">Attendance History</span></div>
+        <table class="data-table">
+          <thead><tr><th>Date</th><th>Subject</th><th>Present</th><th>Absent</th><th>Late</th><th>%</th></tr></thead>
+          <tbody id="history-tbody">
+            <tr><td>21 Mar 2026</td><td>Data Structures</td><td><span class="chip p">6 P</span></td><td><span class="chip a">1 A</span></td><td><span class="chip l">1 L</span></td><td><span class="att-pct good">87%</span></td></tr>
+            <tr><td>20 Mar 2026</td><td>DBMS</td><td><span class="chip p">7 P</span></td><td><span class="chip a">1 A</span></td><td><span class="chip l">0 L</span></td><td><span class="att-pct good">87%</span></td></tr>
+            <tr><td>19 Mar 2026</td><td>Algorithms</td><td><span class="chip p">5 P</span></td><td><span class="chip a">2 A</span></td><td><span class="chip l">1 L</span></td><td><span class="att-pct ok">75%</span></td></tr>
+            <tr><td>18 Mar 2026</td><td>Computer Networks</td><td><span class="chip p">4 P</span></td><td><span class="chip a">3 A</span></td><td><span class="chip l">1 L</span></td><td><span class="att-pct low">62%</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <div class="card-header"><span class="card-title">Student-wise Attendance</span></div>
+        <table class="data-table">
+          <thead><tr><th>Student</th><th>Roll No.</th><th>Attended</th><th>Total</th><th>Attendance %</th></tr></thead>
+          <tbody>
+            <tr><td><span class="stu-avatar">RS</span>Rahul Singh</td><td>CS2201</td><td>18</td><td>20</td><td><span class="att-pct good">90%</span></td></tr>
+            <tr><td><span class="stu-avatar">PP</span>Priya Patel</td><td>CS2202</td><td>16</td><td>20</td><td><span class="att-pct good">80%</span></td></tr>
+            <tr><td><span class="stu-avatar">AK</span>Amit Kumar</td><td>CS2203</td><td>20</td><td>20</td><td><span class="att-pct good">100%</span></td></tr>
+            <tr><td><span class="stu-avatar">SR</span>Sneha Rao</td><td>CS2204</td><td>15</td><td>20</td><td><span class="att-pct ok">75%</span></td></tr>
+            <tr><td><span class="stu-avatar">RG</span>Rohan Gupta</td><td>CS2205</td><td>14</td><td>20</td><td><span class="att-pct ok">70%</span></td></tr>
+            <tr><td><span class="stu-avatar">KM</span>Karan Mehta</td><td>CS2206</td><td>11</td><td>20</td><td><span class="att-pct low">55%</span></td></tr>
+            <tr><td><span class="stu-avatar">AD</span>Anjali Das</td><td>CS2207</td><td>19</td><td>20</td><td><span class="att-pct good">95%</span></td></tr>
+            <tr><td><span class="stu-avatar">NS</span>Neha Sharma</td><td>CS2208</td><td>13</td><td>20</td><td><span class="att-pct low">65%</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════
+         UPLOAD NOTES
+    ══════════════════════════ -->
+    <div class="section" id="section-upload-notes">
+      <div class="page-header">
+        <div><h1>Upload Notes</h1><p>Share study material with your students</p></div>
+        <button class="logout-btn" onclick="localStorage.clear(); window.location.href='login.html'">Log out</button>
+      </div>
+      <div class="card" style="max-width:500px">
+        <div class="card-header"><span class="card-title">Upload Study Notes</span></div>
+        <label class="form-label">Note Title</label>
+        <input class="form-input" type="text" id="note-title" placeholder="e.g. Unit 3 — Trees &amp; Graphs" />
+        <label class="form-label">Subject</label>
+        <select class="form-select" id="note-subject">
+          <option value="">Select subject...</option>
+          <option>Data Structures</option>
+          <option>Algorithms</option>
+          <option>DBMS</option>
+          <option>Operating Systems</option>
+          <option>Computer Networks</option>
+        </select>
+        <label class="form-label">Upload File</label>
+        <div class="upload-box" onclick="document.getElementById('notes-file').click()">
+          <div class="upload-icon-box">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 12V4M6 7l3-3 3 3" stroke="#0f1c2e" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 14h12" stroke="#0f1c2e" stroke-width="1.4" stroke-linecap="round"/></svg>
+          </div>
+          <p>Click to upload PDF or DOCX</p>
+          <span>Max 20 MB</span>
+          <input type="file" id="notes-file" style="display:none" accept=".pdf,.docx" onchange="showFile('notes-file','notes-fname')" />
+        </div>
+        <p id="notes-fname" style="font-size:12px;color:#0f1c2e;margin-bottom:12px;display:none;"></p>
+        <button class="form-submit" onclick="uploadNotes()">Upload Notes</button>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════
+         GIVE ASSIGNMENT
+    ══════════════════════════ -->
+    <div class="section" id="section-assign">
+      <div class="page-header">
+        <div><h1>Give Assignment</h1><p>Create and publish a new assignment</p></div>
+        <button class="logout-btn" onclick="localStorage.clear(); window.location.href='login.html'">Log out</button>
+      </div>
+      <div class="card" style="max-width:500px">
+        <div class="card-header"><span class="card-title">Create New Assignment</span></div>
+        <label class="form-label">Assignment Title</label>
+        <input class="form-input" type="text" id="assign-title" placeholder="e.g. Linked List Implementation" />
+        <label class="form-label">Subject</label>
+        <select class="form-select" id="assign-subject">
+          <option value="">Select subject...</option>
+          <option>Data Structures</option>
+          <option>Algorithms</option>
+          <option>DBMS</option>
+          <option>Operating Systems</option>
+          <option>Computer Networks</option>
+        </select>
+        <label class="form-label">Deadline</label>
+        <input class="form-date" type="date" id="assign-date" />
+        <label class="form-label">Attach File (optional)</label>
+        <div class="upload-box" onclick="document.getElementById('assign-file').click()">
+          <div class="upload-icon-box">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M9 12V4M6 7l3-3 3 3" stroke="#0f1c2e" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"/><path d="M3 14h12" stroke="#0f1c2e" stroke-width="1.4" stroke-linecap="round"/></svg>
+          </div>
+          <p>Click to attach file</p>
+          <span>PDF or DOCX</span>
+          <input type="file" id="assign-file" style="display:none" accept=".pdf,.docx" onchange="showFile('assign-file','assign-fname')" />
+        </div>
+        <p id="assign-fname" style="font-size:12px;color:#0f1c2e;margin-bottom:12px;display:none;"></p>
+        <button class="form-submit" onclick="createAssignment()">Publish Assignment</button>
+      </div>
+    </div>
+
+    <!-- ══════════════════════════
+         STUDENTS
+    ══════════════════════════ -->
+    <div class="section" id="section-students">
+      <div class="page-header">
+        <div><h1>Students</h1><p>View and manage your student list</p></div>
+        <button class="logout-btn" onclick="localStorage.clear(); window.location.href='login.html'">Log out</button>
+      </div>
+      <div class="card">
+        <div class="card-header"><span class="card-title">Student List</span></div>
+        <table class="data-table">
+          <thead><tr><th>Student</th><th>Roll No.</th><th>Submitted</th><th>Avg Score</th><th>Attendance</th><th>Status</th></tr></thead>
+          <tbody>
+            <tr><td><span class="stu-avatar">RS</span>Rahul Singh</td><td>CS2201</td><td>8/11</td><td>82%</td><td><span class="att-pct good">90%</span></td><td><span class="badge done">Active</span></td></tr>
+            <tr><td><span class="stu-avatar">PP</span>Priya Patel</td><td>CS2202</td><td>9/11</td><td>76%</td><td><span class="att-pct good">80%</span></td><td><span class="badge flagged">Flagged</span></td></tr>
+            <tr><td><span class="stu-avatar">AK</span>Amit Kumar</td><td>CS2203</td><td>11/11</td><td>91%</td><td><span class="att-pct good">100%</span></td><td><span class="badge done">Active</span></td></tr>
+            <tr><td><span class="stu-avatar">SR</span>Sneha Rao</td><td>CS2204</td><td>7/11</td><td>68%</td><td><span class="att-pct ok">75%</span></td><td><span class="badge pending">Pending</span></td></tr>
+            <tr><td><span class="stu-avatar">RG</span>Rohan Gupta</td><td>CS2205</td><td>9/11</td><td>74%</td><td><span class="att-pct ok">70%</span></td><td><span class="badge flagged">Flagged</span></td></tr>
+            <tr><td><span class="stu-avatar">KM</span>Karan Mehta</td><td>CS2206</td><td>6/11</td><td>71%</td><td><span class="att-pct low">55%</span></td><td><span class="badge flagged">Flagged</span></td></tr>
+            <tr><td><span class="stu-avatar">AD</span>Anjali Das</td><td>CS2207</td><td>10/11</td><td>88%</td><td><span class="att-pct good">95%</span></td><td><span class="badge done">Active</span></td></tr>
+            <tr><td><span class="stu-avatar">NS</span>Neha Sharma</td><td>CS2208</td><td>8/11</td><td>79%</td><td><span class="att-pct low">65%</span></td><td><span class="badge pending">Pending</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<script>
+  // ── Read name from localStorage ──
+  const userName = localStorage.getItem('userName') || 'Prof. Sharma';
+  const initials = userName.split(' ').filter(w => w.length > 0).map(w => w[0]).join('').toUpperCase().slice(0,2);
+  document.getElementById('nav-name').textContent   = userName;
+  document.getElementById('nav-avatar').textContent = initials;
+  document.getElementById('page-title').textContent = 'Good morning, ' + userName + ' 👋';
+
+  // ── Set today's date ──
+  document.getElementById('att-date').valueAsDate = new Date();
+
+  // ── Section switching ──
+  const allSections = ['dashboard','submissions','plagiarism','attendance','upload-notes','assign','students'];
+
+  function showSection(name, clickedEl) {
+    allSections.forEach(s => {
+      document.getElementById('section-' + s).classList.remove('active');
+    });
+    document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+    document.getElementById('section-' + name).classList.add('active');
+    if (clickedEl) clickedEl.classList.add('active');
+  }
+
+  // ── Students list ──
+  const students = [
+    { name:'Rahul Singh',  roll:'CS2201', init:'RS' },
+    { name:'Priya Patel',  roll:'CS2202', init:'PP' },
+    { name:'Amit Kumar',   roll:'CS2203', init:'AK' },
+    { name:'Sneha Rao',    roll:'CS2204', init:'SR' },
+    { name:'Rohan Gupta',  roll:'CS2205', init:'RG' },
+    { name:'Karan Mehta',  roll:'CS2206', init:'KM' },
+    { name:'Anjali Das',   roll:'CS2207', init:'AD' },
+    { name:'Neha Sharma',  roll:'CS2208', init:'NS' },
+  ];
+
+  let attState = {};
+
+  function loadAttendance() {
+    const subject = document.getElementById('att-subject').value;
+    const date    = document.getElementById('att-date').value;
+    if (!subject) { alert('Please select a subject.'); return; }
+    if (!date)    { alert('Please select a date.'); return; }
+
+    attState = {};
+    students.forEach((_,i) => attState[i] = null);
+
+    const tbody = document.getElementById('att-tbody');
+    tbody.innerHTML = '';
+
+    students.forEach((s,i) => {
+      const tr = document.createElement('tr');
+      tr.innerHTML = `
+        <td>${i+1}</td>
+        <td><span class="stu-avatar">${s.init}</span>${s.name}</td>
+        <td>${s.roll}</td>
+        <td>
+          <div class="att-toggle">
+            <button class="att-btn" id="bp${i}" onclick="markAtt(${i},'P')">P</button>
+            <button class="att-btn" id="ba${i}" onclick="markAtt(${i},'A')">A</button>
+            <button class="att-btn" id="bl${i}" onclick="markAtt(${i},'L')">L</button>
+          </div>
+        </td>
+        <td><span id="st${i}" style="font-size:12px;color:#9a9a96">— not marked</span></td>
+      `;
+      tbody.appendChild(tr);
+    });
+
+    const d = new Date(date);
+    const fmt = d.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
+    document.getElementById('att-label').textContent = `Session: ${subject} · ${fmt}`;
+    document.getElementById('att-wrap').style.display = 'block';
+    updateCounts();
+  }
+
+  function markAtt(i, status) {
+    attState[i] = status;
+    ['p','a','l'].forEach(x => {
+      const b = document.getElementById('b'+x+i);
+      b.className = 'att-btn';
+    });
+    const btn = document.getElementById('b'+status.toLowerCase()+i);
+    if (status==='P') btn.classList.add('present');
+    if (status==='A') btn.classList.add('absent');
+    if (status==='L') btn.classList.add('late');
+    const el = document.getElementById('st'+i);
+    if (status==='P') { el.textContent='✓ Present'; el.style.color='#065f46'; }
+    if (status==='A') { el.textContent='✗ Absent';  el.style.color='#991b1b'; }
+    if (status==='L') { el.textContent='⏱ Late';    el.style.color='#92400e'; }
+    updateCounts();
+  }
+
+  function updateCounts() {
+    const v = Object.values(attState);
+    document.getElementById('att-p').textContent = v.filter(x=>x==='P').length;
+    document.getElementById('att-a').textContent = v.filter(x=>x==='A').length;
+    document.getElementById('att-l').textContent = v.filter(x=>x==='L').length;
+  }
+
+  function saveAttendance() {
+    const subject = document.getElementById('att-subject').value;
+    const date    = document.getElementById('att-date').value;
+    const v       = Object.values(attState);
+    const p = v.filter(x=>x==='P').length;
+    const a = v.filter(x=>x==='A').length;
+    const l = v.filter(x=>x==='L').length;
+    const unmarked = v.filter(x=>x===null).length;
+    if (unmarked > 0 && !confirm(`${unmarked} student(s) not marked. Save anyway?`)) return;
+    const pct    = Math.round((p / students.length) * 100);
+    const cls    = pct >= 80 ? 'good' : pct >= 65 ? 'ok' : 'low';
+    const d      = new Date(date);
+    const fmt    = d.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
+    const tbody  = document.getElementById('history-tbody');
+    const tr     = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${fmt}</td><td>${subject}</td>
+      <td><span class="chip p">${p} P</span></td>
+      <td><span class="chip a">${a} A</span></td>
+      <td><span class="chip l">${l} L</span></td>
+      <td><span class="att-pct ${cls}">${pct}%</span></td>
+    `;
+    tbody.insertBefore(tr, tbody.firstChild);
+    alert(`Saved!\n${subject} · ${fmt}\nPresent: ${p} | Absent: ${a} | Late: ${l} | ${pct}%`);
+    document.getElementById('att-wrap').style.display = 'none';
+    document.getElementById('att-subject').value = '';
+    attState = {};
+    updateCounts();
+  }
+
+  function showFile(inputId, labelId) {
+    const f = document.getElementById(inputId).files[0];
+    const l = document.getElementById(labelId);
+    if (f) { l.textContent = 'Selected: ' + f.name; l.style.display = 'block'; }
+  }
+
+  function uploadNotes() {
+    const t = document.getElementById('note-title').value;
+    const s = document.getElementById('note-subject').value;
+    const f = document.getElementById('notes-file').files[0];
+    if (!t) { alert('Enter a title.'); return; }
+    if (!s) { alert('Select a subject.'); return; }
+    if (!f) { alert('Upload a file.'); return; }
+    alert(`Notes uploaded!\nTitle: ${t}\nSubject: ${s}\nFile: ${f.name}`);
+    document.getElementById('note-title').value   = '';
+    document.getElementById('note-subject').value = '';
+    document.getElementById('notes-file').value   = '';
+    document.getElementById('notes-fname').style.display = 'none';
+  }
+
+  function createAssignment() {
+    const t = document.getElementById('assign-title').value;
+    const s = document.getElementById('assign-subject').value;
+    const d = document.getElementById('assign-date').value;
+    if (!t) { alert('Enter a title.'); return; }
+    if (!s) { alert('Select a subject.'); return; }
+    if (!d) { alert('Set a deadline.'); return; }
+    alert(`Assignment published!\nTitle: ${t}\nSubject: ${s}\nDeadline: ${d}`);
+    document.getElementById('assign-title').value   = '';
+    document.getElementById('assign-subject').value = '';
+    document.getElementById('assign-date').value    = '';
+    document.getElementById('assign-file').value    = '';
+    document.getElementById('assign-fname').style.display = 'none';
+  }
+</script>
+</body>
+</html>
