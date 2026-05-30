@@ -1,6 +1,9 @@
 import java.util.*;
-
-public class PlagiarismGraphModule {
+import org.springframework.stereotype.Component;
+import com.example.model.SubmissionNode;
+import com.example.model.Assignment;
+@Component
+public class GraphService {
 
     // MAIN FUNCTION
     public Map<String, Object> analyze(List<SubmissionNode> submissions) {
